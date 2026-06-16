@@ -9,9 +9,26 @@
 
     init() {
       this.cacheElements();
+      if (this.checkLocalFile()) return;
       this.loadList();
       this.bindEvents();
       this.checkServiceWorker();
+    },
+
+    checkLocalFile() {
+      if (location.protocol === 'file:') {
+        document.body.innerHTML = `
+          <div style="text-align:center;padding:40px;font-family:sans-serif;direction:rtl">
+            <h1 style="color:#ea4335">⛔ خطأ</h1>
+            <p style="font-size:1.1rem;margin:20px 0">التطبيق لا يعمل من الملفات المحلية.</p>
+            <p style="color:#5f6368">افتح الرابط التالي بدلاً من ذلك:</p>
+            <p style="font-size:1rem;margin:16px 0;padding:12px;background:#e8eaed;border-radius:8px;word-break:break-all">
+              <a href="https://mohammeditegypt-dot.github.io/ocr/">https://mohammeditegypt-dot.github.io/ocr/</a>
+            </p>
+          </div>`;
+        return true;
+      }
+      return false;
     },
 
     cacheElements() {
@@ -203,7 +220,12 @@
       } catch (err) {
         console.error('OCR Error:', err);
         this.els.progressSection.style.display = 'none';
-        this.showToast(err.message || 'حدث خطأ. حاول مرة أخرى.', 'error');
+        const msg = err.message || '';
+        if (msg.includes('SetImageFile')) {
+          this.showToast('محرك OCR لم يتم تحميله. افتح التطبيق عبر الرابط: https://mohammeditegypt-dot.github.io/ocr/', 'error');
+        } else {
+          this.showToast(msg || 'حدث خطأ. حاول مرة أخرى.', 'error');
+        }
       } finally {
         this.els.btnProcess.disabled = false;
         this.els.btnProcess.innerHTML = '🔍 معالجة OCR';
