@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>قارئ الفواتير - OCR</title>
+  <meta name="description" content="تصوير الفواتير واستخراج البيانات وحفظها في Excel">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a73e8">
+  <link rel="apple-touch-icon" href="assets/icons/icon-192.svg">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>قارئ الفواتير</h1>
+    <p>تصوير الفاتورة ← استخراج البيانات ← حفظ Excel</p>
+  </header>
+
+  <main>
+    <section id="camera-section" class="card">
+      <div id="camera-container">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas" style="display:none"></canvas>
+        <div id="camera-placeholder">
+          <span>📷</span>
+          <p>اضغط "تشغيل الكاميرا" للبدء</p>
+        </div>
+      </div>
+      <div id="camera-controls">
+        <button id="btn-start-camera" class="btn btn-primary">📷 تشغيل الكاميرا</button>
+        <button id="btn-capture" class="btn btn-success" style="display:none">التقاط صورة</button>
+        <button id="btn-switch-camera" class="btn btn-secondary" style="display:none">🔄</button>
+      </div>
+      <div id="file-upload" class="upload-area">
+        <label for="image-upload">📁 أو اختر صورة من الجهاز</label>
+        <input type="file" id="image-upload" accept="image/*">
+      </div>
+    </section>
+
+    <section id="preview-section" class="card" style="display:none">
+      <h3>معاينة الصورة</h3>
+      <div id="preview-container">
+        <img id="preview" alt="معاينة الصورة">
+      </div>
+      <div class="btn-group">
+        <button id="btn-retake" class="btn btn-secondary">إعادة التصوير</button>
+        <button id="btn-process" class="btn btn-primary">🔍 معالجة OCR</button>
+      </div>
+    </section>
+
+    <section id="progress-section" class="card" style="display:none">
+      <h3>جارٍ معالجة النص...</h3>
+      <div id="progress-bar"><div id="progress-fill"></div></div>
+      <p id="progress-status">بدء المعالجة...</p>
+    </section>
+
+    <section id="results-section" class="card" style="display:none">
+      <h3>البيانات المستخرجة</h3>
+      <p class="hint">يمكنك تعديل الحقول مباشرة</p>
+      <div id="invoice-fields">
+        <div class="field-row">
+          <label>رقم الفاتورة</label>
+          <span contenteditable id="field-number"></span>
+        </div>
+        <div class="field-row">
+          <label>التاريخ</label>
+          <span contenteditable id="field-date"></span>
+        </div>
+        <div class="field-row">
+          <label>المبلغ الإجمالي</label>
+          <span contenteditable id="field-total"></span>
+        </div>
+        <div class="field-row full">
+          <label>النص الكامل</label>
+          <textarea id="field-fulltext" rows="4"></textarea>
+        </div>
+      </div>
+
+      <h4>البنود المستخرجة</h4>
+      <div id="items-table-wrapper">
+        <table id="items-table">
+          <thead>
+            <tr><th>م</th><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr>
+          </thead>
+          <tbody id="items-body"></tbody>
+        </table>
+      </div>
+      <p id="no-items" class="hint">لم يتم العثور على بنود مفصلة</p>
+
+      <button id="btn-export-excel" class="btn btn-success btn-large">💾 حفظ كملف Excel</button>
+    </section>
+
+    <section id="toast-container"></section>
+  </main>
+
+  <footer>
+    <p>قارئ الفواتير — OCR عربي مجاني</p>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="js/camera.js"></script>
+  <script src="js/ocr.js"></script>
+  <script src="js/parser.js"></script>
+  <script src="js/excel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
