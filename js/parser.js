@@ -1,9 +1,13 @@
 const Parser = {
   parse(text) {
     const result = {
-      number: '',
+      name: '',
+      mobile: '',
+      address: '',
+      governorate: '',
       date: '',
-      total: '',
+      receiptNumber: '',
+      barcode: '',
       items: [],
       fullText: text.trim()
     };
@@ -12,24 +16,44 @@ const Parser = {
 
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
-    result.number = this.extractField(text, [
-      /رقم\s*(?:الفاتورة|الفواتير|فاتورة|الأمر)?\s*[:\-–.]?\s*([\w\d\-/]+)/i,
-      /فاتورة\s*رقم\s*[:\-–.]?\s*([\w\d\-/]+)/i,
-      /#\s*(\d+)/,
-      /invoice\s*(?:no|number|#)\s*[:\-–.]?\s*([\w\d\-/]+)/i
+    result.name = this.extractField(text, [
+      /(?:الاسم|اسم العميل|اسم المرسل|اسم المستلم|المرسل|المستلم|اسم)\s*[:\-–.]?\s*([\u0600-\u06FF\s]{3,50})/i,
+      /(?:Name|Customer|Sender|Receiver)\s*[:\-–.]?\s*([a-zA-Z\s]{3,50})/i
+    ]);
+
+    result.mobile = this.extractField(text, [
+      /(?:الموبايل|الجوال|التليفون|التلفون|تليفون|تلفون|موبايل|رقم الهاتف|الهاتف|هاتف)\s*[:\-–.]?\s*([\d\s\+\-\(\)]{7,20})/i,
+      /(?:Mobile|Phone|Tel|Phone Number|Phone No)\s*[:\-–.]?\s*([\d\s\+\-\(\)]{7,20})/i,
+      /(?:01[0125]\d{8}|01\d{9}|\+20\d{10}|0020\d{10})/
+    ]);
+
+    result.address = this.extractField(text, [
+      /(?:العنوان|عنوان)\s*[:\-–.]?\s*([\u0600-\u06FF\s\d,.\/#\-]{5,100})/i,
+      /(?:Address|Adress)\s*[:\-–.]?\s*([a-zA-Z\s\d,.\/#\-]{5,100})/i
+    ]);
+
+    result.governorate = this.extractField(text, [
+      /(?:المحافظة|المدينة|المنطقة|البلدة|الولاية)\s*[:\-–.]?\s*([\u0600-\u06FF\s]{3,30})/i,
+      /(?:Governorate|City|Region|Governorate|State)\s*[:\-–.]?\s*([a-zA-Z\s]{3,30})/i
     ]);
 
     result.date = this.extractField(text, [
-      /(?:تاريخ|التاريخ|بتاريخ)\s*[:\-–.]?\s*([\d\/\-\.]+)/i,
+      /(?:التاريخ|تاريخ|بتاريخ)\s*[:\-–.]?\s*([\d\/\-\.]+)/i,
       /(\d{1,4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,4})/,
-      /date\s*[:\-–.]?\s*([\d\/\-\.]+)/i
+      /(?:Date)\s*[:\-–.]?\s*([\d\/\-\.]+)/i
     ]);
 
-    result.total = this.extractField(text, [
-      /(?:الإجمالي|المجموع|المبلغ)\s*(?:الكلي|النهائي|الإجمالي)?\s*[:\-–.]?\s*([\d\.,]+)/i,
-      /total\s*[:\-–.]?\s*([\d\.,]+)/i,
-      /(?:ريال|د.ك|دينار|جنيه|ل\.س|شيكل|دولار)\s*([\d\.,]+)/i,
-      /([\d\.,]+)\s*(?:ريال|د\.ك|دينار|جنيه)/i
+    result.receiptNumber = this.extractField(text, [
+      /(?:رقم الايصال|ايصال رقم|رقم الإيصال|رقم الوصل|وصل رقم|الايصال|الإيصال)\s*[:\-–.]?\s*([\w\d\-/]+)/i,
+      /(?:Receipt No|Receipt Number|Receipt#|Receipt)\s*[:\-–.]?\s*([\w\d\-/]+)/i,
+      /ايصال\s*رقم\s*([\w\d\-/]+)/i
+    ]);
+
+    result.barcode = this.extractField(text, [
+      /(?:الباركود|باركود|بارコード|رمز)\s*[:\-–.]?\s*([\d]{5,20})/i,
+      /(?:Barcode|باركود|بارコード)\s*[:\-–.]?\s*([\dA-Z\-]{5,30})/i,
+      /رقم البوليصة|بوليصة\s*رقم\s*([\d\-]+)/i,
+      /([\d]{8,20})/
     ]);
 
     result.items = this.extractItems(lines);
@@ -40,7 +64,7 @@ const Parser = {
   extractField(text, patterns) {
     for (const pattern of patterns) {
       const match = text.match(pattern);
-      if (match && match[1]) {
+      if (match && match[1] && match[1].trim().length > 1) {
         return match[1].trim();
       }
     }
@@ -57,15 +81,13 @@ const Parser = {
         inItemsSection = true;
         continue;
       }
-
       if (!inItemsSection) continue;
-      if (/^(?:الإجمالي|المجموع|total|شكر|ملاحظات)/i.test(line)) break;
+      if (/^(?:الإجمالي|المجموع|total|شكر|ملاحظات|الاسم|العنوان|المحمافظ|التاريخ)/i.test(line)) break;
 
       const parts = line.split(/\s{2,}|\t+|,+/).filter(Boolean);
       if (parts.length >= 2) {
         const nums = parts.map(p => parseFloat(p.replace(/[^\d\.]/g, ''))).filter(n => !isNaN(n));
         const texts = parts.filter(p => isNaN(parseFloat(p.replace(/[^\d\.]/g, ''))));
-
         if (nums.length >= 1) {
           items.push({
             name: texts[0] || `بند ${items.length + 1}`,
@@ -76,7 +98,6 @@ const Parser = {
         }
       }
     }
-
     return items.slice(0, 50);
   }
 };

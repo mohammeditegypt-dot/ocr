@@ -37,9 +37,13 @@
         btnExportAll: id('btn-export-all'),
         btnClearList: id('btn-clear-list'),
         fileUpload: id('image-upload'),
-        fieldNumber: id('field-number'),
+        fieldName: id('field-name'),
+        fieldMobile: id('field-mobile'),
+        fieldAddress: id('field-address'),
+        fieldGovernorate: id('field-governorate'),
         fieldDate: id('field-date'),
-        fieldTotal: id('field-total'),
+        fieldReceipt: id('field-receipt'),
+        fieldBarcode: id('field-barcode'),
         fieldFulltext: id('field-fulltext'),
         itemsBody: id('items-body'),
         noItems: id('no-items'),
@@ -99,10 +103,12 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>${i + 1}</td>
-          <td>${this.escapeHtml(inv.number || '—')}</td>
+          <td>${this.escapeHtml(inv.name || '—')}</td>
+          <td>${this.escapeHtml(inv.mobile || '—')}</td>
+          <td>${this.escapeHtml(inv.governorate || '—')}</td>
+          <td>${this.escapeHtml(inv.receiptNumber || '—')}</td>
           <td>${this.escapeHtml(inv.date || '—')}</td>
-          <td>${this.escapeHtml(inv.total || '—')}</td>
-          <td>${inv.addedAt || '—'}</td>
+          <td>${this.escapeHtml(inv.barcode || '—')}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -205,9 +211,13 @@
     },
 
     displayResults(data) {
-      this.els.fieldNumber.textContent = data.number;
+      this.els.fieldName.textContent = data.name;
+      this.els.fieldMobile.textContent = data.mobile;
+      this.els.fieldAddress.textContent = data.address;
+      this.els.fieldGovernorate.textContent = data.governorate;
       this.els.fieldDate.textContent = data.date;
-      this.els.fieldTotal.textContent = data.total;
+      this.els.fieldReceipt.textContent = data.receiptNumber;
+      this.els.fieldBarcode.textContent = data.barcode;
       this.els.fieldFulltext.value = data.fullText;
 
       const tbody = this.els.itemsBody;
@@ -246,9 +256,13 @@
         }
       });
       return {
-        number: this.els.fieldNumber.textContent.trim(),
+        name: this.els.fieldName.textContent.trim(),
+        mobile: this.els.fieldMobile.textContent.trim(),
+        address: this.els.fieldAddress.textContent.trim(),
+        governorate: this.els.fieldGovernorate.textContent.trim(),
         date: this.els.fieldDate.textContent.trim(),
-        total: this.els.fieldTotal.textContent.trim(),
+        receiptNumber: this.els.fieldReceipt.textContent.trim(),
+        barcode: this.els.fieldBarcode.textContent.trim(),
         fullText: this.els.fieldFulltext.value.trim(),
         items: items
       };
@@ -256,7 +270,7 @@
 
     addToList() {
       const data = this.getEditedData();
-      if (!data.number && !data.fullText) {
+      if (!data.name && !data.fullText) {
         this.showToast('لا توجد بيانات للإضافة', 'error');
         return;
       }
@@ -272,7 +286,7 @@
 
     exportSingle() {
       const data = this.getEditedData();
-      if (!data.number && !data.fullText) {
+      if (!data.name && !data.fullText) {
         this.showToast('لا توجد بيانات للتصدير', 'error');
         return;
       }

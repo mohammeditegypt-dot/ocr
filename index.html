@@ -59,16 +59,32 @@
       <p class="hint">يمكنك تعديل الحقول مباشرة</p>
       <div id="invoice-fields">
         <div class="field-row">
-          <label>رقم الفاتورة</label>
-          <span contenteditable id="field-number"></span>
+          <label>الاسم</label>
+          <span contenteditable id="field-name"></span>
+        </div>
+        <div class="field-row">
+          <label>الموبايل</label>
+          <span contenteditable id="field-mobile"></span>
+        </div>
+        <div class="field-row">
+          <label>العنوان</label>
+          <span contenteditable id="field-address"></span>
+        </div>
+        <div class="field-row">
+          <label>المحافظة</label>
+          <span contenteditable id="field-governorate"></span>
         </div>
         <div class="field-row">
           <label>التاريخ</label>
           <span contenteditable id="field-date"></span>
         </div>
         <div class="field-row">
-          <label>المبلغ الإجمالي</label>
-          <span contenteditable id="field-total"></span>
+          <label>رقم الايصال</label>
+          <span contenteditable id="field-receipt"></span>
+        </div>
+        <div class="field-row">
+          <label>الباركود</label>
+          <span contenteditable id="field-barcode"></span>
         </div>
         <div class="field-row full">
           <label>النص الكامل</label>
@@ -99,7 +115,7 @@
       <div id="list-table-wrapper">
         <table id="list-table">
           <thead>
-            <tr><th>م</th><th>رقم الفاتورة</th><th>التاريخ</th><th>المبلغ</th><th>تاريخ الإضافة</th></tr>
+            <tr><th>م</th><th>الاسم</th><th>الموبايل</th><th>المحافظة</th><th>رقم الايصال</th><th>التاريخ</th><th>الباركود</th></tr>
           </thead>
           <tbody id="list-body"></tbody>
         </table>
