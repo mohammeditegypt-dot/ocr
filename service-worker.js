@@ -5,12 +5,11 @@ const STATIC_ASSETS = [
   'js/app.js',
   'js/camera.js',
   'js/ocr.js',
+  'js/custom-ocr.js',
   'js/parser.js',
   'js/excel.js',
   'manifest.json',
-  'lib/tesseract.min.js',
-  'lib/tesseract-core.wasm.js',
-  'lib/worker.min.js'
+  'lib/tesseract-core.wasm.js'
 ];
 
 const CDN_URLS = [
