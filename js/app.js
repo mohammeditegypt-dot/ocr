@@ -155,7 +155,7 @@
       } catch (err) {
         console.error('OCR Error:', err);
         this.els.progressSection.style.display = 'none';
-        this.showToast('حدث خطأ أثناء المعالجة. حاول مرة أخرى.', 'error');
+        this.showToast(err.message || 'حدث خطأ. حاول مرة أخرى.', 'error');
       } finally {
         this.els.btnProcess.disabled = false;
         this.els.btnProcess.innerHTML = '🔍 معالجة OCR';
