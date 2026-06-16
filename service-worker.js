@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocr-invoice-v3';
+const CACHE_NAME = 'ocr-invoice-v4';
 const STATIC_ASSETS = [
   'index.html',
   'css/style.css',
@@ -7,7 +7,10 @@ const STATIC_ASSETS = [
   'js/ocr.js',
   'js/parser.js',
   'js/excel.js',
-  'manifest.json'
+  'manifest.json',
+  'lib/tesseract.min.js',
+  'lib/tesseract-core.wasm.js',
+  'lib/worker.min.js'
 ];
 
 const CDN_URLS = [
@@ -41,7 +44,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((res) => res || fetch(e.request).then((fetchRes) => {
-      if (fetchRes.ok && /xlsx|jsdelivr/.test(e.request.url)) {
+      if (fetchRes.ok && /xlsx/.test(e.request.url)) {
         const copy = fetchRes.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
       }
