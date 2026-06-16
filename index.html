@@ -87,7 +87,28 @@
       </div>
       <p id="no-items" class="hint">لم يتم العثور على بنود مفصلة</p>
 
-      <button id="btn-export-excel" class="btn btn-success btn-large">💾 حفظ كملف Excel</button>
+      <div class="btn-group">
+        <button id="btn-add-to-list" class="btn btn-primary">➕ إضافة إلى القائمة</button>
+        <button id="btn-export-single" class="btn btn-success">💾 تصدير هذه فقط</button>
+      </div>
+    </section>
+
+    <section id="list-section" class="card">
+      <h3>📋 قائمة الفواتير</h3>
+      <p class="hint" id="list-count">0 فاتورة</p>
+      <div id="list-table-wrapper">
+        <table id="list-table">
+          <thead>
+            <tr><th>م</th><th>رقم الفاتورة</th><th>التاريخ</th><th>المبلغ</th><th>تاريخ الإضافة</th></tr>
+          </thead>
+          <tbody id="list-body"></tbody>
+        </table>
+      </div>
+      <p id="list-empty" class="hint">لم يتم إضافة أي فواتير بعد</p>
+      <div class="btn-group">
+        <button id="btn-export-all" class="btn btn-success">💾 تصدير الكل كـ Excel</button>
+        <button id="btn-clear-list" class="btn btn-secondary">🗑️ مسح القائمة</button>
+      </div>
     </section>
 
     <section id="toast-container"></section>

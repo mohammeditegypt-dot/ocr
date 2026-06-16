@@ -184,6 +184,12 @@ h4 {
   display: flex;
   gap: 8px;
   justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-group .btn {
+  flex: 1;
+  min-width: 120px;
 }
 
 /* File Upload */
@@ -396,6 +402,35 @@ footer {
 }
 
 /* Responsive */
+/* Invoice List */
+#list-section .btn-group {
+  margin-top: 12px;
+}
+
+#list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+#list-table th {
+  background: var(--primary);
+  color: white;
+  padding: 8px 6px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+#list-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+
+#list-table tr:nth-child(even) td {
+  background: #f8f9fa;
+}
+
 @media (max-width: 400px) {
   header h1 { font-size: 1.2rem; }
   .btn { padding: 8px 16px; font-size: 0.85rem; }

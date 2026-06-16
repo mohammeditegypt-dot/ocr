@@ -2,18 +2,20 @@
   const App = {
     currentImageData: null,
     currentData: null,
+    invoiceList: [],
+    STORAGE_KEY: 'ocr-invoice-list',
 
     els: {},
 
     init() {
       this.cacheElements();
+      this.loadList();
       this.bindEvents();
       this.checkServiceWorker();
     },
 
     cacheElements() {
       const id = s => document.getElementById(s);
-      const q = s => document.querySelector(s);
       this.els = {
         video: id('video'),
         canvas: id('canvas'),
@@ -30,7 +32,10 @@
         btnSwitch: id('btn-switch-camera'),
         btnRetake: id('btn-retake'),
         btnProcess: id('btn-process'),
-        btnExport: id('btn-export-excel'),
+        btnAddToList: id('btn-add-to-list'),
+        btnExportSingle: id('btn-export-single'),
+        btnExportAll: id('btn-export-all'),
+        btnClearList: id('btn-clear-list'),
         fileUpload: id('image-upload'),
         fieldNumber: id('field-number'),
         fieldDate: id('field-date'),
@@ -38,6 +43,9 @@
         fieldFulltext: id('field-fulltext'),
         itemsBody: id('items-body'),
         noItems: id('no-items'),
+        listBody: id('list-body'),
+        listEmpty: id('list-empty'),
+        listCount: id('list-count'),
         toastContainer: id('toast-container')
       };
     },
@@ -48,7 +56,10 @@
       this.els.btnSwitch.addEventListener('click', () => this.switchCamera());
       this.els.btnRetake.addEventListener('click', () => this.retake());
       this.els.btnProcess.addEventListener('click', () => this.processOcr());
-      this.els.btnExport.addEventListener('click', () => this.exportExcel());
+      this.els.btnAddToList.addEventListener('click', () => this.addToList());
+      this.els.btnExportSingle.addEventListener('click', () => this.exportSingle());
+      this.els.btnExportAll.addEventListener('click', () => this.exportAll());
+      this.els.btnClearList.addEventListener('click', () => this.clearList());
       this.els.fileUpload.addEventListener('change', (e) => this.handleFileUpload(e));
     },
 
@@ -56,6 +67,45 @@
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('service-worker.js').catch(() => {});
       }
+    },
+
+    loadList() {
+      try {
+        const saved = localStorage.getItem(this.STORAGE_KEY);
+        if (saved) this.invoiceList = JSON.parse(saved);
+      } catch (_) {}
+      this.renderList();
+    },
+
+    saveList() {
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.invoiceList));
+      } catch (_) {}
+      this.renderList();
+    },
+
+    renderList() {
+      const tbody = this.els.listBody;
+      tbody.innerHTML = '';
+      this.els.listCount.textContent = `${this.invoiceList.length} فاتورة`;
+
+      if (this.invoiceList.length === 0) {
+        this.els.listEmpty.style.display = 'block';
+        return;
+      }
+      this.els.listEmpty.style.display = 'none';
+
+      this.invoiceList.forEach((inv, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${i + 1}</td>
+          <td>${this.escapeHtml(inv.number || '—')}</td>
+          <td>${this.escapeHtml(inv.date || '—')}</td>
+          <td>${this.escapeHtml(inv.total || '—')}</td>
+          <td>${inv.addedAt || '—'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
     },
 
     async startCamera() {
@@ -67,7 +117,7 @@
         this.els.btnCapture.style.display = 'inline-flex';
         this.els.btnSwitch.style.display = 'inline-flex';
       } catch (e) {
-        this.showToast('تعذر تشغيل الكاميرا. يرجى السماح بالصلاحية أو رفع صورة.', 'error');
+        this.showToast('تعذر تشغيل الكاميرا. استخدم رفع صورة.', 'error');
       }
     },
 
@@ -105,7 +155,6 @@
       this.els.btnStartCamera.style.display = 'inline-flex';
       this.els.video.style.display = 'none';
       this.els.cameraPlaceholder.style.display = 'flex';
-
       this.els.previewSection.scrollIntoView({ behavior: 'smooth' });
     },
 
@@ -116,7 +165,6 @@
       this.els.resultsSection.style.display = 'none';
       this.els.progressSection.style.display = 'none';
       this.els.btnStartCamera.style.display = 'inline-flex';
-
       this.els.cameraSection.scrollIntoView({ behavior: 'smooth' });
     },
 
@@ -129,18 +177,12 @@
       this.els.progressStatus.textContent = 'جارٍ التجهيز...';
       this.els.btnProcess.disabled = true;
       this.els.btnProcess.innerHTML = '<span class="spinner"></span> جاري المعالجة...';
-
       this.els.progressSection.scrollIntoView({ behavior: 'smooth' });
 
       try {
         const text = await Ocr.processImage(this.currentImageData, (pct, msg) => {
-          if (pct < 0 || msg) {
-            this.els.progressStatus.textContent = msg || 'جارٍ المعالجة...';
-            if (pct >= 0) this.els.progressFill.style.width = pct + '%';
-          } else {
-            this.els.progressFill.style.width = pct + '%';
-            this.els.progressStatus.textContent = msg || `معالجة النص... ${pct}%`;
-          }
+          this.els.progressStatus.textContent = msg || 'جارٍ المعالجة...';
+          if (pct >= 0) this.els.progressFill.style.width = pct + '%';
         });
 
         this.els.progressFill.style.width = '100%';
@@ -192,7 +234,7 @@
     getEditedData() {
       const items = [];
       const rows = this.els.itemsBody.querySelectorAll('tr');
-      rows.forEach((row, i) => {
+      rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length >= 5) {
           items.push({
@@ -203,7 +245,6 @@
           });
         }
       });
-
       return {
         number: this.els.fieldNumber.textContent.trim(),
         date: this.els.fieldDate.textContent.trim(),
@@ -213,18 +254,57 @@
       };
     },
 
-    exportExcel() {
+    addToList() {
+      const data = this.getEditedData();
+      if (!data.number && !data.fullText) {
+        this.showToast('لا توجد بيانات للإضافة', 'error');
+        return;
+      }
+      data.addedAt = new Date().toLocaleString('ar-EG', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit'
+      });
+      this.invoiceList.push(data);
+      this.saveList();
+      this.showToast('✓ تم إضافة الفاتورة إلى القائمة', 'success');
+      this.retake();
+    },
+
+    exportSingle() {
       const data = this.getEditedData();
       if (!data.number && !data.fullText) {
         this.showToast('لا توجد بيانات للتصدير', 'error');
         return;
       }
       try {
-        ExcelExport.download(data);
-        this.showToast('تم تصدير Excel بنجاح ✓', 'success');
+        ExcelExport.downloadSingle(data);
+        this.showToast('✓ تم تصدير Excel', 'success');
       } catch (err) {
         console.error('Excel Error:', err);
         this.showToast('فشل في تصدير Excel', 'error');
+      }
+    },
+
+    exportAll() {
+      if (this.invoiceList.length === 0) {
+        this.showToast('القائمة فارغة', 'error');
+        return;
+      }
+      try {
+        ExcelExport.downloadAll(this.invoiceList);
+        this.showToast('✓ تم تصدير جميع الفواتير', 'success');
+      } catch (err) {
+        console.error('Excel Error:', err);
+        this.showToast('فشل في تصدير Excel', 'error');
+      }
+    },
+
+    clearList() {
+      if (this.invoiceList.length === 0) return;
+      if (confirm('هل أنت متأكد من مسح جميع الفواتير؟')) {
+        this.invoiceList = [];
+        this.saveList();
+        this.showToast('تم مسح القائمة', 'success');
       }
     },
 
