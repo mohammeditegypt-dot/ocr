@@ -364,6 +364,7 @@
   };
 
   document.addEventListener('DOMContentLoaded', () => {
+    Tesseract.setLogging(true);
     App.init();
   });
 })();

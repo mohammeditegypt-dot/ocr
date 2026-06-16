@@ -11,7 +11,7 @@ const STATIC_ASSETS = [
 ];
 
 const CDN_URLS = [
-  'https://unpkg.com/tesseract.js@3.0.3/dist/tesseract.min.js',
+  'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 

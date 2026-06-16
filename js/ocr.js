@@ -1,29 +1,39 @@
 const Ocr = {
+  worker: null,
   TIMEOUT_MS: 300000,
 
+  async ensureWorker(onProgress) {
+    if (this.worker) return this.worker;
+    onProgress?.(-1, 'تحميل محرك OCR...');
+    this.worker = await Tesseract.createWorker({
+      lang: 'ara',
+      logger: m => {
+        if (m.status === 'loading tesseract core') {
+          onProgress?.(-1, 'تحميل المحرك...');
+        } else if (m.status === 'initializing tesseract') {
+          onProgress?.(-1, 'تهيئة المحرك...');
+        } else if (m.status === 'loading language traineddata') {
+          const pct = Math.round((m.progress || 0) * 100);
+          onProgress?.(pct, `تحميل ملفات العربية... ${pct > 0 ? pct + '%' : ''}`);
+        } else if (m.status === 'initializing api') {
+          onProgress?.(-1, 'تهيئة اللغة العربية...');
+        } else if (m.status === 'recognizing text') {
+          const pct = Math.round((m.progress || 0) * 100);
+          onProgress?.(pct, `معالجة النص... ${pct}%`);
+        } else {
+          onProgress?.(-1, m.status || 'جارٍ التحميل...');
+        }
+      }
+    });
+    return this.worker;
+  },
+
   async processImage(imageData, onProgress) {
-    onProgress?.(-1, 'بدء المعالجة...');
+    const worker = await this.ensureWorker(onProgress);
+    onProgress?.(-1, 'بدء التعرف على النص...');
 
     const result = await Promise.race([
-      Tesseract.recognize(imageData, 'ara', {
-        logger: m => {
-          if (m.status === 'loading tesseract core') {
-            onProgress?.(-1, 'تحميل المحرك...');
-          } else if (m.status === 'initializing tesseract') {
-            onProgress?.(-1, 'تهيئة المحرك...');
-          } else if (m.status === 'loading language traineddata') {
-            const pct = Math.round((m.progress || 0) * 100);
-            onProgress?.(pct, `تحميل ملفات العربية... ${pct > 0 ? pct + '%' : ''}`);
-          } else if (m.status === 'initializing api') {
-            onProgress?.(-1, 'تهيئة اللغة العربية...');
-          } else if (m.status === 'recognizing text') {
-            const pct = Math.round((m.progress || 0) * 100);
-            onProgress?.(pct, `معالجة النص... ${pct}%`);
-          } else {
-            onProgress?.(-1, m.status || 'جارٍ التحميل...');
-          }
-        }
-      }),
+      worker.recognize(imageData),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('انتهت مهلة المعالجة (5 دقائق)')), this.TIMEOUT_MS)
       )
@@ -33,5 +43,9 @@ const Ocr = {
   },
 
   async terminate() {
+    if (this.worker) {
+      await this.worker.terminate();
+      this.worker = null;
+    }
   }
 };
