@@ -8,7 +8,7 @@ const Ocr = {
     this.worker = await Tesseract.createWorker({
       lang: 'ara',
       workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/worker.min.js',
-      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@4.0.4/tesseract-core.wasm.js',
+      corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@4.0.4/tesseract-core.js',
       logger: m => {
         if (m.status === 'loading tesseract core') {
           onProgress?.(-1, 'تحميل المحرك...');
