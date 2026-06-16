@@ -126,16 +126,21 @@
       this.els.resultsSection.style.display = 'none';
       this.els.progressSection.style.display = 'block';
       this.els.progressFill.style.width = '0%';
-      this.els.progressStatus.textContent = 'تحميل محرك OCR...';
+      this.els.progressStatus.textContent = 'جارٍ التجهيز...';
       this.els.btnProcess.disabled = true;
       this.els.btnProcess.innerHTML = '<span class="spinner"></span> جاري المعالجة...';
 
       this.els.progressSection.scrollIntoView({ behavior: 'smooth' });
 
       try {
-        const text = await Ocr.processImage(this.currentImageData, (progress) => {
-          this.els.progressFill.style.width = progress + '%';
-          this.els.progressStatus.textContent = `معالجة النص... ${progress}%`;
+        const text = await Ocr.processImage(this.currentImageData, (pct, msg) => {
+          if (pct < 0 || msg) {
+            this.els.progressStatus.textContent = msg || 'جارٍ المعالجة...';
+            if (pct >= 0) this.els.progressFill.style.width = pct + '%';
+          } else {
+            this.els.progressFill.style.width = pct + '%';
+            this.els.progressStatus.textContent = msg || `معالجة النص... ${pct}%`;
+          }
         });
 
         this.els.progressFill.style.width = '100%';
