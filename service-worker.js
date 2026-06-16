@@ -11,7 +11,6 @@ const STATIC_ASSETS = [
 ];
 
 const CDN_URLS = [
-  'https://cdn.jsdelivr.net/npm/tesseract.js@4.1.4/dist/tesseract.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
@@ -42,7 +41,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     caches.match(e.request).then((res) => res || fetch(e.request).then((fetchRes) => {
-      if (fetchRes.ok && /tesseract|jsdelivr/.test(e.request.url)) {
+      if (fetchRes.ok && /xlsx|jsdelivr/.test(e.request.url)) {
         const copy = fetchRes.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy));
       }

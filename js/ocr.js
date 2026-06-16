@@ -2,11 +2,20 @@ const Ocr = {
   worker: null,
   TIMEOUT_MS: 300000,
 
+  getBaseUrl() {
+    const path = window.location.href;
+    const idx = path.lastIndexOf('/');
+    return path.substring(0, idx + 1);
+  },
+
   async ensureWorker(onProgress) {
     if (this.worker) return this.worker;
+    const base = this.getBaseUrl();
     onProgress?.(-1, 'تحميل محرك OCR...');
     this.worker = await Tesseract.createWorker({
       lang: 'ara',
+      workerPath: base + 'lib/worker.min.js',
+      corePath: base + 'lib/tesseract-core.wasm.js',
       logger: m => {
         if (m.status === 'loading tesseract core') {
           onProgress?.(-1, 'تحميل المحرك...');
