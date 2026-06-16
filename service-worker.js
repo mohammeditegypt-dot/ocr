@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ocr-invoice-v2';
+const CACHE_NAME = 'ocr-invoice-v3';
 const STATIC_ASSETS = [
   'index.html',
   'css/style.css',
@@ -11,7 +11,7 @@ const STATIC_ASSETS = [
 ];
 
 const CDN_URLS = [
-  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  'https://unpkg.com/tesseract.js@3.0.3/dist/tesseract.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
